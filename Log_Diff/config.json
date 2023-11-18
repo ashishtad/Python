@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "input_log_files": [
+                "./LogFiles/file1.log",
+                "./LogFiles/file2.log"
+            ],
+            "output_log_file" : "./LogFiles/diff_file1.html"
+        },
+        {
+            "input_log_files" :[
+                "./LogFiles/file3.log",
+                "./LogFiles/file2.log"
+            ],
+            "output_log_file":"./LogFiles/diff_file2.html"
+        }
+    ]
+
+}

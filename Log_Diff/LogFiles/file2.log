@@ -1,0 +1,8 @@
+2023-11-11 12:30:00 INFO Message: This is a log message 1
+2023-11-11 12:35:00 ERROR Message: An errr occurred 2sdfsfdfs
+2023-11-11 12:40:00 INFO Message: Another log message 2
+2023-11-11 12:45:00 DEBUG Message: Debugging information 2
+2023-11-11 12:45:00 DEBUG Message: system log information 4
+2023-11-11 12:45:00 DEBUG Message: Errror log information 2
+2023-11-11 12:45:00 DEBUG Message: Debugging information 2
+2023-11-11 12:45:00 DEBUG Message: Debugging information 2
