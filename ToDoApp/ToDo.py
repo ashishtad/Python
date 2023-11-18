@@ -20,6 +20,7 @@ def saveTaskInDatabase():
         db = open(TASKS_DB_PATH, "w")
         if db:
             json.dump(my_tasks_list,db,indent=4)
+        db.close()
     except PermissionError:
         print("You don't have permission to open the file")
     except Exception as e:
@@ -28,21 +29,69 @@ def saveTaskInDatabase():
 # Add tasks to DB
 def add_task():
 
-    description = input("Enter task description\n")
+    description = input("Enter task description: \n")
     due_date = input("Enter due date in YYYY/MM/DD format\n")
     task_id = str(uuid.uuid4())
 
-    task = { "id": task_id, "description": description, "CompleteBy": due_date, "status" : False, "Progress":0 }
+    task = { "id": task_id, "description": description, "CompleteBy": due_date, "status" : 'Not Done', "Progress":0 }
     #Add all the tasks which are contained in dictionary to a list
     my_tasks_list.append(task)
 
     print("Task added successfully!")
 
     
-
-def delete_task():
-    desc = input("Enter task to be deleted :")
+def delete_taskId( taskId ) :
+    for task in my_tasks_list:
+        if ( task['id'] == taskId):
+            my_tasks_list.remove(task)
+            return True
+        
+    return False
     
+def delete_task():
+    taskId = input("Enter task ID to be deleted :")
+    if (True == delete_taskId(taskId)):
+        print("Task deleted successfully")
+        #Task got deleted - Time to save in database.
+        saveTaskInDatabase()
+    else:
+        print("Failure in deletion of Task!!!")
+
+def updateProgress(taskId,prog):
+    for task in my_tasks_list:
+        if( taskId == task['id']): 
+            task['Progress'] = prog
+            return True
+    
+    return False
+
+def updateStatus(taskId,status):
+    for task in my_tasks_list:
+        if ( taskId == task['id']):
+            task['status'] = status
+            return True
+    return False
+
+def updateTaskProgress():
+    taskId = input("Enter taskId to update: ")
+    prog = int(input("Enter task progress %: "))
+    if ( prog> 100 ):
+        print("Task progress is greater than 100!!")
+        return False
+    
+    if (updateProgress(taskId,prog)):
+        print("Task progress updated successfully")
+        #Ensure that taks progress is updated successfully. Then check if prog is 100%
+        if ( prog == 100 ):
+            if (updateStatus(taskId,"Completed")):
+                print("Task is marked as Completed..")
+            else:
+                print("Marking task status as completed FAILED!!!")
+
+        saveTaskInDatabase()
+    else:
+        print("Failed to Update Task Progress!!!")
+
 
 def switch_case(choice):
     if choice == 1:
@@ -63,6 +112,8 @@ def switch_case(choice):
 
     elif choice == 3:
          list_tasks()
+    elif choice == 4:
+        updateTaskProgress()
     else :
         print("Invalid operation entered!!")
 
@@ -78,7 +129,7 @@ def list_tasks():
     for task in my_tasks_list:
         task_id = task['id']
         description = task['description']
-        status = 'Done' if task['status'] else 'Not Done'
+        status = 'Completed' if task['status'] == 'Completed' else 'Not Done'
         due_date = task['CompleteBy']
         progress = f"{task['Progress']}%"
         #Add row to the table
@@ -111,6 +162,7 @@ if __name__ == "__main__":
     print("1. Add a task")
     print("2. Delete a task")
     print("3. List tasks")
+    print("4. Update Task progress")
 
     choice = int(input("Enter choice of operation: "))
 
