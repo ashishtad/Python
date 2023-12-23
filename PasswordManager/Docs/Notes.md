@@ -26,3 +26,6 @@ The use of a strong, unpredictable salt adds an extra layer of defense against v
 In the context of password hashing, the salt is typically stored along with the hashed password in a secure database. During authentication, the stored salt is retrieved and combined with the entered password for hashing. This process ensures that even if an attacker gains access to the hashed passwords, they face significant challenges in cracking them due to the unique salts.
 
 - To store the user credentials sqlite DB which is a lightweight relational database is used.
+
+To Do:
+Implement the logger module

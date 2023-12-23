@@ -47,22 +47,22 @@ Remember that security is a crucial aspect of a password manager, so prioritize 
 
 
 
+The __init__.py file is a special file in Python that indicates to the interpreter that the directory should be treated as a Python package. 
+It can be an empty file, but its presence is required for Python to recognize the directory as a pack
 
-password_manager/
-|-- gui/
-|   |-- __init__.py
-|   |-- main.py
-|   |-- ... (other GUI-related files)
-|-- authentication/
-|   |-- __init__.py
-|   |-- authentication.py
-|   |-- ... (other authentication-related files)
-|-- password_management/
-|   |-- __init__.py
-|   |-- password_manager.py
-|   |-- ... (other password management-related files)
-|-- main.py
-|-- requirements.txt
+
+PasswordManagerProject/
+├── __init__.py
+├── GUI/
+│   ├── __init__.py
+│   ├── main_window.py
+│   └── credential_management_window.py
+├── Backend/
+│   ├── __init__.py
+│   ├── database.py
+│   ├── authentication.py
+└── main.py
+
 
 
 
