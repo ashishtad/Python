@@ -67,3 +67,8 @@ PasswordManagerProject/
 
 
 
+Credential manager : Storing credentials of users
+======================================================
+To securely store sensitive information like passwords, it's crucial to use encryption. In the context of storing credentials in a database,
+ we should consider hashing passwords and using symmetric encryption to protect other sensitive data. 
+Here we would be  using the cryptography library in Python for password hashing and Fernet symmetric encryption
