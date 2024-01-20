@@ -78,25 +78,85 @@ class CredentialManager:
         self.logger.log_debug("Credential Manager: Save credentials")
         #Get the credential type first based on that do the task
         credential_type = self.credential_values[0]
+        #Get the userif of logged in user
+        userid = self.get_loggedin_userid()
+        if not userid:
+            messagebox.showerror("Error",f"user id for user {self.user} not found")
+            self.add_credential_window.destroy()
+            return
+
         #For credential type website or other
         if credential_type == self.credential_types[1] or credential_type == self.credential_types[3]:
-            self.save_website_credentials(credential_type)
+            self.save_website_credentials(credential_type,userid)
         elif credential_type == self.credential_types[2]:
-            self.save_card_crdentials(credential_type)
+            self.save_card_crdentials(credential_type,userid)
 
-    def save_website_credentials(self, credential_type):
+    #Save the website credentials
+    def save_website_credentials(self, credential_type,userid):
         self.logger.log_debug(f"Credential Manager: save_website_credentials credential type {credential_type}")
         #Get the credentials from Entry widgets labels
         website_name = self.credential_values[1].get()
         username = self.credential_values[2].get()
         password = self.credential_values[3].get()
+        #Check for empty values
+        if not website_name or not username or not password:
+            messagebox.showerror("Save", "Empty Credential field! Please enter values")
+            self.add_credential_window.destroy()
+            return
+
         # Create a dictionary to store encrypted credentials.
         #encrypt_data return objects which is not JSON serializable. So approach is to base64 encode the byte data.
-        credentials_dict =  {'name': base64.b64encode(self.encrypt_data(website_name)).decode('utf-8'), 
+        credentials_dict =  {'websiteName': base64.b64encode(self.encrypt_data(website_name)).decode('utf-8'),
                              'username': base64.b64encode(self.encrypt_data(username)).decode('utf-8'), 
                              'password': base64.b64encode(self.encrypt_data(password)).decode('utf-8')}
         # Convert the dictionary to a JSON string before storing in the database
         encrypted_credentials_json = json.dumps(credentials_dict)
+
+        if self.save_credentials_to_database(credential_type, userid, encrypted_credentials_json):
+            messagebox.showinfo("Save", "Credentials saved succesfully!!")
+        else:
+            messagebox.showerror("Save", "Save credentials Failed!!")
+        self.add_credential_window.destroy()
+        return
+
+    #Save the card crdentials
+    def save_card_crdentials(self,credential_type,userid):
+        self.logger.log_debug(f"Credential Manager: save_card_crdentials type {credential_type}")
+        #Get the credentials from Entry widgets labels
+        card_type = self.credential_values[1].get()
+        card_number = self.credential_values[2].get()
+        card_pin = self.credential_values[3].get()
+
+        if not card_type or not card_number or not card_pin:
+            messagebox.showerror("Save", "Empty Credential field! Please enter values")
+            self.add_credential_window.destroy()
+            return
+
+        credentials_dict =  {'cardType': base64.b64encode(self.encrypt_data(card_type)).decode('utf-8'),
+                             'cardNumber': base64.b64encode(self.encrypt_data(card_number)).decode('utf-8'),
+                             'cardPIN': base64.b64encode(self.encrypt_data(card_pin)).decode('utf-8')}
+        # Convert the dictionary to a JSON string before storing in the database
+        encrypted_credentials_json = json.dumps(credentials_dict)
+        if self.save_credentials_to_database(credential_type, userid, encrypted_credentials_json):
+            messagebox.showinfo("Save", "Credentials saved succesfully!!")
+        else:
+            messagebox.showerror("Save", "Save credentials Failed!!")
+
+        self.add_credential_window.destroy()
+        return
+
+
+    def save_credentials_to_database(self, credential_type, userid, encrypted_credentials_json):
+        #Frame query to store the credential in credentials table
+        store_query = f"INSERT INTO credentials (user_id, type, encrypted_data) VALUES (?, ?, ?);"
+        values = (userid, credential_type, encrypted_credentials_json)
+        if not self.database.execute_query(store_query,values):
+            self.logger.log_error(f"save_website_credentials execution Failed for query {store_query}")
+            return False
+        return True
+
+    def get_loggedin_userid(self):
+        self.logger.log_debug(f" Credential Manager: get user if for user {self.user}")
         #Retrieve userid from users table
         select_query = f"SELECT user_id FROM users WHERE username = ?;"
         values = (self.user,)
@@ -104,26 +164,11 @@ class CredentialManager:
             self.logger.log_error(f"save_website_credentials execution Failed for query {select_query}")
             messagebox.showerror("Save", "User id not exits")
         user_info = self.database.cursor.fetchone()
+        userid = ""
         if user_info:
             userid = user_info[0]
-        else:
-            messagebox.showerror("Save", "User id not exits")
-        
-        #Frame query to store the credential in credentials table
-        store_query = f"INSERT INTO credentials (user_id, type, encrypted_data) VALUES (?, ?, ?);"
-        values = (userid, credential_type, encrypted_credentials_json)
-        if not self.database.execute_query(store_query,values):
-            self.logger.log_error(f"save_website_credentials execution Failed for query {select_query}")
-            messagebox.showerror("Save", "Save credentials Failed!!")
-        messagebox.showinfo("Save", "Credentials saved succesfully!!")
-        
+        return userid
 
-    def save_card_crdentials(self,credential_type):
-        self.logger.log_debug("Credential Manager: save_card_crdentials")
-
-
-        
-    
     #Encrypt the data using fernet symetric encryption
     def encrypt_data(self,data):
         #encode the string to bytes as cryptographic methods work on bytes
@@ -163,7 +208,7 @@ class CredentialManager:
             label3 = tk.Label(self.add_credential_window, text="Password")
             label3.pack(pady=5)
             self.credentials_labels_entries.append(label3)
-            password_entry = tk.Entry(self.add_credential_window)
+            password_entry = tk.Entry(self.add_credential_window, show="*")
             password_entry.pack(pady=5)
             self.credentials_labels_entries.append(password_entry)
             #Pass only the Entry widgets here and the text values, 
@@ -189,7 +234,7 @@ class CredentialManager:
             label3 = tk.Label(self.add_credential_window, text="PIN")
             label3.pack(pady=5)
             self.credentials_labels_entries.append(label3)
-            pin_entry = tk.Entry(self.add_credential_window)
+            pin_entry = tk.Entry(self.add_credential_window, show= "*")
             pin_entry.pack(pady=5)
             self.credentials_labels_entries.append(pin_entry)
             #Pass only the Entry widgets here and the text values, 
